@@ -188,7 +188,7 @@ class PictureField(ImageField):
         pixel_densities: [int] = None,
         grid_columns: int = None,
         breakpoints: {str: int} = None,
-        save_options: {str: any} = {},
+        save_options: {str: any} = None,
         **kwargs,
     ):
         settings = conf.get_settings()
