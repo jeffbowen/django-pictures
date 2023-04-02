@@ -27,6 +27,7 @@ class SimplePicture:
     parent_name: str
     file_type: str
     aspect_ratio: str | Fraction | None
+    save_options: dict
     storage: Storage
     width: int
 
@@ -79,7 +80,7 @@ class SimplePicture:
     def save(self, image):
         with io.BytesIO() as file_buffer:
             img = self.process(image)
-            img.save(file_buffer, format=self.file_type)
+            img.save(file_buffer, format=self.file_type, **self.save_options)
             self.storage.delete(self.name)  # avoid any filename collisions
             self.storage.save(self.name, ContentFile(file_buffer.getvalue()))
 
@@ -160,7 +161,7 @@ class PictureFieldFile(ImageFieldFile):
         return {
             ratio: {
                 file_type: {
-                    width: SimplePicture(file_name, file_type, ratio, storage, width)
+                    width: SimplePicture(file_name, file_type, ratio, field.save_options, storage, width)
                     for width in utils.source_set(
                         (img_width, img_height),
                         ratio=ratio,
@@ -187,6 +188,7 @@ class PictureField(ImageField):
         pixel_densities: [int] = None,
         grid_columns: int = None,
         breakpoints: {str: int} = None,
+        save_options: {str: any} = {},
         **kwargs,
     ):
         settings = conf.get_settings()
@@ -196,6 +198,7 @@ class PictureField(ImageField):
         self.pixel_densities = pixel_densities or settings.PIXEL_DENSITIES
         self.grid_columns = grid_columns or settings.GRID_COLUMNS
         self.breakpoints = breakpoints or settings.BREAKPOINTS
+        self.save_options = save_options or {}
         super().__init__(
             verbose_name=verbose_name,
             name=name,
